@@ -3,18 +3,30 @@ module Solver
     -- For unit test
     ) where
 
-import Data.List (inits, nub, tails)
+import Data.List (inits, nub, permutations, tails)
 import Data.Maybe (catMaybes)
 
 import Types (Location, Color, Shape, Piece (..), Size, Board (..),
-              boardSize, emptyBoard, isEmpty, isFilled, outOfBoard, getColor)
+              boardSize, emptyBoard, isEmpty, isFilled, outOfBoard, getColor, pieceColor)
 
 solve :: Int -> Int ->  [Piece] ->  [(Color, Location)] -> [Board]
-solve rows cols pieces startLocations = concatMap putRemainingPieces initialBoards
-  where initialBoards = foldr put [(emptyBoard rows cols, pieces)] startLocations
-        put (col, loc) =  concatMap (putLocation col loc)
-        putRemainingPieces (board, pieces) = foldr f [board] pieces
-        f piece@(Piece col shape) boards = concatMap (\board -> concatMap (\loc -> enumerateFitBoards loc piece board) (findCorners col board)) boards
+solve rows cols pieces startLocations = foldr f initial startLocations
+  where coloredPieces col = filter ((== col) . pieceColor) pieces
+        initial = [(emptyBoard rows cols)]
+        f (col, loc)  boards = map fst $ putPermColored col (map (\board -> (board, [loc])) boards) $ coloredPieces col
+
+putPermColored :: Color -> [(Board, [Location])] -> [Piece] -> [(Board, [Location])]
+putPermColored col bss pieces = concatMap (putColored col bss) allOrder
+  where allOrder = permutations pieces
+
+putColored :: Color -> [(Board, [Location])] -> [Piece] -> [(Board, [Location])]
+putColored col bss pieces = foldr (\piece bss' -> putColored1 col bss' piece) bss pieces
+
+putColored1 :: Color -> [(Board, [Location])] -> Piece -> [(Board, [Location])]
+putColored1 col bss piece = map f $ concatMap (\(board, locs) -> putted board locs) bss
+  where putted board locs = putLocs piece locs board
+        putLocs piece locs board = concatMap (\loc -> put1PieceAt loc piece board) locs
+        f board = (board, findCorners col board)
 
 findCorners :: Color -> Board -> [Location]
 findCorners col board@(Board css) = nub $ filter meetCorner allLocations
@@ -27,17 +39,8 @@ findCorners col board@(Board css) = nub $ filter meetCorner allLocations
                                               getColor (r + or, c) board /= col
         fourCorners = [(-1, -1), (1, -1), (-1, 1), (1, 1)]
 
-
-putLocation :: Color -> Location -> (Board, [Piece]) -> [(Board, [Piece])]
-putLocation col loc (board, pieces) = concatMap put targetPieces
-  where targetPieces = filter ((\(Piece c _) -> c == col) . fst) pss
-        pss = zipWith (\is ts -> (last is, init is ++ ts)) iss tss
-        iss = tail $ inits pieces
-        tss = tail $ tails pieces
-        put (piece, rest) = zip (enumerateFitBoards loc piece board) $ repeat rest
-
-enumerateFitBoards ::Location -> Piece ->  Board -> [Board]
-enumerateFitBoards (sr, sc) (Piece col shapes) board = oks
+put1PieceAt ::Location -> Piece ->  Board -> [Board]
+put1PieceAt (sr, sc) (Piece col shapes) board = oks
   where oks = catMaybes $ concatMap (\shape -> map (put shape) shape) shapes
         put shape (r, c) | canPutShape board (sr - r, sc - c) shape  = Just (putShape col (sr - r, sc -c) shape board)
                          | otherwise                                 = Nothing
