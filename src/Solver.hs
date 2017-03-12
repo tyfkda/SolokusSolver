@@ -3,19 +3,23 @@ module Solver
     -- For unit test
     ) where
 
+import Data.List (inits, tails)
 import Data.Maybe (catMaybes)
 
 import Types (Location, Color, Shape, Piece (..), Size, Board (..))
 
 --solve :: Int -> Int ->  [Piece] ->  [(Color, Location)] -> [Board]
-solve rows cols pieces startLocations = initialBoards [emptyBoard rows cols] pieces startLocations
+solve rows cols pieces startLocations = initialBoards
+  where initialBoards = foldr put [(emptyBoard rows cols, pieces)] startLocations
+        put (col, loc) =  concatMap (putLocation col loc)
 
--- Just fill start locations.
---initialBoards :: [Board] ->  [Piece] ->  [(Color, Location)] -> [Board]  -- [(Board, [Piece])]
-initialBoards boards pieces ss = foldr put boards ss
-  where put (col, loc) boards' = concatMap (\piece -> concatMap (enumerateFitBoards loc piece) boards') targetPieces
-          where targetPieces = filter matchColor pieces
-                matchColor (Piece c _) = c == col
+putLocation :: Color -> Location -> (Board, [Piece]) -> [(Board, [Piece])]
+putLocation col loc (board, pieces) = concatMap put targetPieces
+  where targetPieces = filter ((\(Piece c _) -> c == col) . fst) pss
+        pss = zipWith (\is ts -> (last is, init is ++ ts)) iss tss
+        iss = tail $ inits pieces
+        tss = tail $ tails pieces
+        put (piece, rest) = zip (enumerateFitBoards loc piece board) $ repeat rest
 
 enumerateFitBoards ::Location -> Piece ->  Board -> [Board]
 enumerateFitBoards (sr, sc) (Piece col shapes) board = oks
