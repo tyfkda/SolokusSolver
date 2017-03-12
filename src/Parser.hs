@@ -1,7 +1,7 @@
 module Parser
     ( parse
     -- For unit test
-    , parseStartLocation
+    , parseStartPos
     , parsePiece
     ) where
 
@@ -9,22 +9,22 @@ import Prelude hiding (flip)
 import Data.List (nub)
 import Data.Text (split, pack, unpack)
 
-import Types (Location, Color, Shape, Piece (..), Size, Board (..))
+import Types (Pos, Color, Shape, Piece (..), Size, Board (..))
 
-parse :: String -> (Int, Int, [Piece], [(Color, Location)])
-parse contents = (rows, cols, pieces, startPoints)
-  where (boardLine : startPointsLine : rs) = lines contents
+parse :: String -> (Int, Int, [Piece], [(Color, Pos)])
+parse contents = (rows, cols, pieces, startPoss)
+  where (boardLine : startPossLine : rs) = lines contents
         [rows, cols] = map read $ words boardLine
-        startPoints = map parseStartLocation $ words startPointsLine
+        startPoss = map parseStartPos $ words startPossLine
         pieces = map parsePiece rs
 
--- ex. "G:1,4" -> ('G', (1, 4))
-parseStartLocation :: String -> (Color, Location)
-parseStartLocation ss = (col, loc)
+-- ex. "G:1,4" -> ('G', (0, 3))
+parseStartPos :: String -> (Color, Pos)
+parseStartPos ss = (col, pos)
   where (col : ':' : rs) = ss
-        loc = parseLocation rs
+        pos = parsePos rs
 
--- ex. "G . . 1,1, 1,2 1,3 2,2" -> Piece 'G' [[(1,1),(1,2),(1,3),(2,2)]]
+-- ex. "G . . 1,1, 1,2 1,3 2,2" -> Piece 'G' [[(0,0),(0,1),(0,2),(1,1)]]
 parsePiece :: String -> Piece
 parsePiece ss = Piece col (expandShape canRotate canFlip shape)
   where (cs : rs : fs : ls) = words ss
@@ -57,11 +57,11 @@ normalizeShape shape = map (\(r, c) -> (r - r0, c - c0)) shape
         c0 = minimum $ map snd shape
 
 parseShape :: [String] -> Shape
-parseShape = map parseLocation
+parseShape = map parsePos
 
 -- ex. "1,4" -> (0, 3)
-parseLocation :: String -> Location
-parseLocation = (\(r : c : _) -> (read r - 1, read c - 1)) . splitString ','
+parsePos :: String -> Pos
+parsePos = (\(r : c : _) -> (read r - 1, read c - 1)) . splitString ','
 
 splitString :: Char -> String -> [String]
 splitString sep str = map unpack $ split (== sep) $ pack str

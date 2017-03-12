@@ -6,5 +6,5 @@ import Solver (solve)
 main :: IO ()
 main = do
   s <- getContents
-  let (rows, cols, pieces, startLocations) = parse s
-  print $ solve rows cols pieces startLocations
+  let (rows, cols, pieces, startPoss) = parse s
+  print $ solve rows cols pieces startPoss

@@ -1,6 +1,6 @@
 4 4       -- Board size (Rows, Columns)
-R:1,1 G:1,4 B:4,1 Y:4,4  -- Entry points: Space separated, (Letter:Row,Column)
-R . . 1,1 2,1 2,2 4,1  -- (Letter, Rotate, Flip, Locations)
+R:1,1 G:1,4 B:4,1 Y:4,4  -- Entry points: Space separated, (Color:Row,Column)
+R . . 1,1 2,1 2,2 4,1  -- (Color, Rotate, Flip, Positions)
 G . . 1,1 1,2 1,3 2,2
 B . . 1,2 2,1 2,2 2,3
 Y . . 1,2 2,1 2,2 3,2
