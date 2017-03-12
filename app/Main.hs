@@ -1,6 +1,8 @@
 module Main where
 
-import Lib
+import Parser
 
 main :: IO ()
-main = someFunc
+main = do
+  s <- getContents
+  print $ parse s
