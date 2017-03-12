@@ -3,19 +3,21 @@ module Solver
     -- For unit test
     ) where
 
-import Data.List (inits, tails)
+import Data.List (inits, nub, tails)
 import Data.Maybe (catMaybes)
 
 import Types (Location, Color, Shape, Piece (..), Size, Board (..),
               boardSize, emptyBoard, isEmpty, isFilled, outOfBoard, getColor)
 
---solve :: Int -> Int ->  [Piece] ->  [(Color, Location)] -> [Board]
-solve rows cols pieces startLocations = map (\(board, ((Piece col shape) : _)) -> (findCorners col board, board, shape)) initialBoards
+solve :: Int -> Int ->  [Piece] ->  [(Color, Location)] -> [Board]
+solve rows cols pieces startLocations = concatMap putRemainingPieces initialBoards
   where initialBoards = foldr put [(emptyBoard rows cols, pieces)] startLocations
         put (col, loc) =  concatMap (putLocation col loc)
+        putRemainingPieces (board, pieces) = foldr f [board] pieces
+        f piece@(Piece col shape) boards = concatMap (\board -> concatMap (\loc -> enumerateFitBoards loc piece board) (findCorners col board)) boards
 
 findCorners :: Color -> Board -> [Location]
-findCorners col board@(Board css) = filter meetCorner allLocations
+findCorners col board@(Board css) = nub $ filter meetCorner allLocations
   where allLocations = [(r, c) | r <- [0..boardRows - 1], c <- [0..boardCols - 1]]
         (boardRows, boardCols) = boardSize board
         meetCorner loc@(r, c) = isEmpty board loc && any (meetCornerFor loc) fourCorners
@@ -41,7 +43,7 @@ enumerateFitBoards (sr, sc) (Piece col shapes) board = oks
                          | otherwise                                 = Nothing
 
 canPutShape :: Board -> Location -> Shape -> Bool
-canPutShape board (sr, sc) shape = not $ any (\(r, c) -> outOfBoard (sr + r, sc + c) board || filled (r, c)) shape
+canPutShape board (sr, sc) shape = not $ any (\(r, c) -> outOfBoard (sr + r, sc + c) board || filled (sr + r, sc + c)) shape
   where filled loc = isFilled board loc
 
 putShape :: Color -> Location -> Shape -> Board -> Board
