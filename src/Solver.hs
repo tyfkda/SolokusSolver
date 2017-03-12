@@ -6,12 +6,25 @@ module Solver
 import Data.List (inits, tails)
 import Data.Maybe (catMaybes)
 
-import Types (Location, Color, Shape, Piece (..), Size, Board (..))
+import Types (Location, Color, Shape, Piece (..), Size, Board (..),
+              boardSize, emptyBoard, isEmpty, isFilled, outOfBoard, getColor)
 
 --solve :: Int -> Int ->  [Piece] ->  [(Color, Location)] -> [Board]
-solve rows cols pieces startLocations = initialBoards
+solve rows cols pieces startLocations = map (\(board, ((Piece col shape) : _)) -> (findCorners col board, board, shape)) initialBoards
   where initialBoards = foldr put [(emptyBoard rows cols, pieces)] startLocations
         put (col, loc) =  concatMap (putLocation col loc)
+
+findCorners :: Color -> Board -> [Location]
+findCorners col board@(Board css) = filter meetCorner allLocations
+  where allLocations = [(r, c) | r <- [0..boardRows - 1], c <- [0..boardCols - 1]]
+        (boardRows, boardCols) = boardSize board
+        meetCorner loc@(r, c) = isEmpty board loc && any (meetCornerFor loc) fourCorners
+        meetCornerFor loc@(r, c) offset@(or, oc) = not (outOfBoard (r + or, c + oc) board) && isCorner loc offset
+        isCorner loc@(r, c) offset@(or, oc) = getColor (r + or, c + oc) board == col &&
+                                              getColor (r, c + oc) board /= col &&
+                                              getColor (r + or, c) board /= col
+        fourCorners = [(-1, -1), (1, -1), (-1, 1), (1, 1)]
+
 
 putLocation :: Color -> Location -> (Board, [Piece]) -> [(Board, [Piece])]
 putLocation col loc (board, pieces) = concatMap put targetPieces
@@ -28,10 +41,8 @@ enumerateFitBoards (sr, sc) (Piece col shapes) board = oks
                          | otherwise                                 = Nothing
 
 canPutShape :: Board -> Location -> Shape -> Bool
-canPutShape board (sr, sc) shape = not $ any (\(r, c) -> outOfRange (sr + r, sc + c) || filled (r, c)) shape
-  where outOfRange (rr, cc) = rr < 0 || cc < 0 || rr >= boardRow || cc >= boardCol
-        filled loc = isFilled board loc
-        (boardRow, boardCol) = boardSize board
+canPutShape board (sr, sc) shape = not $ any (\(r, c) -> outOfBoard (sr + r, sc + c) board || filled (r, c)) shape
+  where filled loc = isFilled board loc
 
 putShape :: Color -> Location -> Shape -> Board -> Board
 putShape col (sr, sc) shape board = foldr put board shape
@@ -48,19 +59,3 @@ shapeSize :: Shape -> Size
 shapeSize ls = (maxRow + 1, maxCol + 1)
   where maxRow = maximum $ map fst ls
         maxCol = maximum $ map snd ls
-
-emptyBoard :: Int -> Int -> Board
-emptyBoard rows cols = Board $ replicate rows line
-  where line = replicate cols empty
-
-empty :: Color
-empty = '.'
-
-isEmpty :: Board -> Location -> Bool
-isEmpty (Board colss) (r, c) = colss !! r !! c == empty
-
-isFilled :: Board -> Location -> Bool
-isFilled board loc = not $ isEmpty board loc
-
-boardSize :: Board -> Size
-boardSize (Board css) = (length css, length $ head css)
