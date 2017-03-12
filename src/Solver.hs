@@ -42,12 +42,18 @@ findCorners col board@(Board css) = nub $ filter meetCorner allLocations
 put1PieceAt ::Location -> Piece ->  Board -> [Board]
 put1PieceAt (sr, sc) (Piece col shapes) board = oks
   where oks = catMaybes $ concatMap (\shape -> map (put shape) shape) shapes
-        put shape (r, c) | canPutShape board (sr - r, sc - c) shape  = Just (putShape col (sr - r, sc -c) shape board)
-                         | otherwise                                 = Nothing
+        put shape (r, c) | canPutShape (sr - r, sc - c) shape col board  = Just (putShape col (sr - r, sc -c) shape board)
+                         | otherwise                                     = Nothing
 
-canPutShape :: Board -> Location -> Shape -> Bool
-canPutShape board (sr, sc) shape = not $ any (\(r, c) -> outOfBoard (sr + r, sc + c) board || filled (sr + r, sc + c)) shape
-  where filled loc = isFilled board loc
+canPutShape :: Location -> Shape -> Color -> Board -> Bool
+canPutShape (sr, sc) shape col board = not $ any ng shape
+  where ng (r, c) = out || filled || shareEdge
+          where loc = (sr + r, sc + c)
+                out = outOfBoard loc board
+                filled = isFilled board loc
+                shareEdge = any isShare [(-1, 0), (1, 0), (0, -1), (0, 1)]
+                  where isShare (ar, ac) = not (outOfBoard adj board) && getColor adj board == col
+                          where adj = (sr + r + ar, sc + c + ac)
 
 putShape :: Color -> Location -> Shape -> Board -> Board
 putShape col (sr, sc) shape board = foldr put board shape
