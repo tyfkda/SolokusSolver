@@ -19,7 +19,7 @@ pieceColor (Piece col _) = col
 
 type Size = (Int, Int)  -- row, column
 data Board = Board [[Color]]  -- Size, Start positions for each letters.
-  deriving Show
+  deriving (Eq, Show)
 
 boardSize :: Board -> Size
 boardSize (Board css) = (length css, length $ head css)

@@ -36,14 +36,25 @@ parsePiece ss = Piece col (expandShape canRotate canFlip shape)
 expandShape :: Bool -> Bool -> Shape -> [Shape]
 expandShape canRotate canFlip shape = nub flipped
   where rotated
-          | canRotate  = rotate shape
+          | canRotate  = take 4 $ iterate rotate90 shape
           | otherwise  = [shape]
         flipped
           | canFlip    = rotated ++ map flip rotated
           | otherwise  = rotated
 
-rotate = undefined
-flip = undefined
+rotate90 :: Shape -> Shape
+rotate90 shape = normalizeShape $ map rot90 shape
+  where rot90 (r, c) = (-c, r)
+
+flip :: Shape -> Shape
+flip shape = normalizeShape $ map f shape
+  where f (r, c) = (-r, c)
+
+-- Move a shape to fit the origin
+normalizeShape :: Shape -> Shape
+normalizeShape shape = map (\(r, c) -> (r - r0, c - c0)) shape
+  where r0 = minimum $ map fst shape
+        c0 = minimum $ map snd shape
 
 parseShape :: [String] -> Shape
 parseShape = map parseLocation

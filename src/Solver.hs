@@ -10,7 +10,7 @@ import Types (Location, Color, Shape, Piece (..), Size, Board (..),
               boardSize, emptyBoard, isEmpty, isFilled, outOfBoard, getColor, pieceColor)
 
 solve :: Int -> Int ->  [Piece] ->  [(Color, Location)] -> [Board]
-solve rows cols pieces startLocations = foldr f initial startLocations
+solve rows cols pieces startLocations = nub $ foldr f initial startLocations
   where coloredPieces col = filter ((== col) . pieceColor) pieces
         initial = [(emptyBoard rows cols)]
         f (col, loc)  boards = map fst $ putPermColored col (map (\board -> (board, [loc])) boards) $ coloredPieces col
