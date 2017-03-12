@@ -9,18 +9,10 @@ import Prelude hiding (flip)
 import Data.List (nub)
 import Data.Text (split, pack, unpack)
 
-type Location = (Int, Int)  -- row, column
-type Color = Char  -- Piece color
-type Shape = [Location]  -- Locations of block
-data Piece = Piece Color [Shape]  -- Color, Locations of block
-  deriving Show
+import Types (Location, Color, Shape, Piece (..), Size, Board (..))
 
-type Size = (Int, Int)  -- row, column
-data Board = Board Size [(Color, Location)]  -- Size, Start positions for each letters.
-  deriving Show
-
-parse :: String -> (Board, [Piece])
-parse contents = (Board (rows, cols) startPoints, pieces)
+parse :: String -> (Int, Int, [Piece], [(Color, Location)])
+parse contents = (rows, cols, pieces, startPoints)
   where (boardLine : startPointsLine : rs) = lines contents
         [rows, cols] = map read $ words boardLine
         startPoints = map parseStartLocation $ words startPointsLine
@@ -56,9 +48,9 @@ flip = undefined
 parseShape :: [String] -> Shape
 parseShape = map parseLocation
 
--- ex. "1,4" -> (1, 4)
+-- ex. "1,4" -> (0, 3)
 parseLocation :: String -> Location
-parseLocation = (\(r : c : _) -> (read r, read c)) . splitString ','
+parseLocation = (\(r : c : _) -> (read r - 1, read c - 1)) . splitString ','
 
 splitString :: Char -> String -> [String]
 splitString sep str = map unpack $ split (== sep) $ pack str

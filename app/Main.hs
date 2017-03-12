@@ -1,8 +1,10 @@
 module Main where
 
-import Parser
+import Parser (parse)
+import Solver (solve)
 
 main :: IO ()
 main = do
   s <- getContents
-  print $ parse s
+  let (rows, cols, pieces, startLocations) = parse s
+  print $ solve rows cols pieces startLocations
