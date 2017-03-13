@@ -7,11 +7,16 @@ module Types
     , Board (..)
     , shapeSize
     , pieceColor
-    , boardSize, emptyBoard, empty, isEmpty, isFilled, outOfBoard, getColor, canPutShape, putShape
+    , boardSize, emptyBoard, empty, isEmpty, isFilled, outOfBoard, getColorAt, canPutShape, putShape
     ) where
 
 type Pos = (Int, Int)  -- row, column
+
 type Color = Char  -- Piece color
+
+empty :: Color
+empty = '.'
+
 type Shape = [Pos]  -- Poss of block
 
 shapeSize :: Shape -> Size
@@ -35,31 +40,31 @@ emptyBoard :: Int -> Int -> Board
 emptyBoard rows cols = Board $ replicate rows line
   where line = replicate cols empty
 
-empty :: Color
-empty = '.'
+isEmpty :: Pos -> Board -> Bool
+isEmpty loc board = getColorAt loc board == empty
 
-isEmpty :: Board -> Pos -> Bool
-isEmpty board loc = getColor loc board == empty
-
-isFilled :: Board -> Pos -> Bool
-isFilled board loc = not $ isEmpty board loc
+isFilled :: Pos -> Board -> Bool
+isFilled loc board = not $ isEmpty loc board
 
 outOfBoard :: Pos -> Board -> Bool
 outOfBoard (r, c) board = r < 0 || c < 0 || r >= boardRow || c >= boardCol
   where (boardRow, boardCol) = boardSize board
 
-getColor :: Pos -> Board -> Color
-getColor (r, c) (Board css) = css !! r !! c
+getColorAt :: Pos -> Board -> Color
+getColorAt (r, c) (Board css) = css !! r !! c
 
 canPutShape :: Pos -> Shape -> Color -> Board -> Bool
-canPutShape (sr, sc) shape col board = not $ any ng shape
-  where ng (r, c) = out || filled || shareEdge
-          where pos = (sr + r, sc + c)
-                out = outOfBoard pos board
-                filled = isFilled board pos
-                shareEdge = any isShare [(-1, 0), (1, 0), (0, -1), (0, 1)]
-                  where isShare (ar, ac) = not (outOfBoard adj board) && getColor adj board == col
-                          where adj = (sr + r + ar, sc + c + ac)
+canPutShape (r0, c0) shape col board = not $ any invalid shape
+  where invalid (r, c) = outOfBoard pos board ||
+                         isFilled pos board ||
+                         isShareEdge col pos board
+          where pos = (r0 + r, c0 + c)
+
+isShareEdge :: Color -> Pos -> Board -> Bool
+isShareEdge col (r, c) board = any isShare adjacents
+  where isShare (ar, ac) = not (outOfBoard adj board) && getColorAt adj board == col
+          where adj = (r + ar, c + ac)
+        adjacents = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
 putShape :: Color -> Pos -> Shape -> Board -> Board
 putShape col (sr, sc) shape board = foldr put board shape
