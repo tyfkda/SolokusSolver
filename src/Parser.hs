@@ -8,7 +8,9 @@ module Parser
 import Data.List (nub, sort)
 import Data.Text (split, pack, unpack)
 
-import Types (Pos, Color, Shape, Piece (..), Size, Board (..))
+import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
+             , (.-.)
+             )
 
 parse :: String -> (Size, [Piece], [(Color, Pos)])
 parse contents = ((rows, cols), pieces, startPoss)
@@ -52,9 +54,8 @@ flipHorz shape = map f shape
 
 -- Move a shape to fit the origin
 normalizeShape :: Shape -> Shape
-normalizeShape shape = map (\(r, c) -> (r - r0, c - c0)) shape
-  where r0 = minimum $ map fst shape
-        c0 = minimum $ map snd shape
+normalizeShape shape = map (.-. basePos) shape
+  where basePos = (minimum $ map fst shape, minimum $ map snd shape)
 
 parseShape :: [String] -> Shape
 parseShape = map parsePos
