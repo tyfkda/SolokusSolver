@@ -6,13 +6,13 @@ import Data.List (inits, nub, permutations, tails)
 import Data.Maybe (catMaybes)
 
 import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
-             , boardSize, emptyBoard, isEmpty, outOfBoard, getColorAt, pieceColor
+             , boardSize, blankBoard, isBlank, outOfBoard, getColorAt, pieceColor
              , canPutShape, putShape )
 
 solve :: Int -> Int -> [Piece] -> [(Color, Pos)] -> [Board]
 solve rows cols pieces startPoss = nub $ foldr f initial startPoss
   where f (col, pos) boards = putPermColored col [pos] boards $ coloredPieces col
-        initial = [(emptyBoard rows cols)]
+        initial = [(blankBoard rows cols)]
         coloredPieces col = filter ((== col) . pieceColor) pieces
 
 putPermColored :: Color -> [Pos] -> [Board] -> [Piece] -> [Board]
@@ -42,7 +42,7 @@ enumerateCorners col board = [pos | pos <- allPoss, isCorner col pos board]
         (boardRows, boardCols) = boardSize board
 
 isCorner :: Color -> Pos -> Board -> Bool
-isCorner col pos board = isEmpty pos board &&
+isCorner col pos board = isBlank pos board &&
                          any (\offset -> isCornerFor col pos offset board) diagonals
   where diagonals = [(-1, -1), (1, -1), (-1, 1), (1, 1)]
 

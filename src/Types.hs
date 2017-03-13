@@ -7,15 +7,15 @@ module Types
     , Board (..)
     , shapeSize
     , pieceColor
-    , boardSize, emptyBoard, empty, isEmpty, isFilled, outOfBoard, getColorAt, canPutShape, putShape
+    , boardSize, blankBoard, blank, isBlank, isFilled, outOfBoard, getColorAt, canPutShape, putShape
     ) where
 
 type Pos = (Int, Int)  -- row, column
 
 type Color = Char  -- Piece color
 
-empty :: Color
-empty = '.'
+blank :: Color
+blank = '.'
 
 type Shape = [Pos]  -- Poss of block
 
@@ -36,15 +36,15 @@ data Board = Board [[Color]]  -- Size, Start positions for each letters.
 boardSize :: Board -> Size
 boardSize (Board css) = (length css, length $ head css)
 
-emptyBoard :: Int -> Int -> Board
-emptyBoard rows cols = Board $ replicate rows line
-  where line = replicate cols empty
+blankBoard :: Int -> Int -> Board
+blankBoard rows cols = Board $ replicate rows line
+  where line = replicate cols blank
 
-isEmpty :: Pos -> Board -> Bool
-isEmpty loc board = getColorAt loc board == empty
+isBlank :: Pos -> Board -> Bool
+isBlank loc board = getColorAt loc board == blank
 
 isFilled :: Pos -> Board -> Bool
-isFilled loc board = not $ isEmpty loc board
+isFilled loc board = not $ isBlank loc board
 
 outOfBoard :: Pos -> Board -> Bool
 outOfBoard (r, c) board = r < 0 || c < 0 || r >= boardRow || c >= boardCol
