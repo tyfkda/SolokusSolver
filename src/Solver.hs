@@ -17,9 +17,9 @@ solve size pieces startPoss = foldr f initial startPoss
         coloredPieces col = [piece | piece <- pieces, pieceColor piece == col]
 
 putPermColored :: Color -> [Pos] -> [Board] -> [Piece] -> [Board]
-putPermColored col poss boards pieces = concatMap (putColored col bss') allOrder
+putPermColored col poss boards pieces = concatMap (putColored col bss) allOrder
   where allOrder = permutations pieces
-        bss' = zip boards $ repeat poss
+        bss = zip boards $ repeat poss
 
 putColored :: Color -> [(Board, [Pos])] -> [Piece] -> [Board]
 putColored col bss pieces = nub $ map fst $ foldr f bss pieces
