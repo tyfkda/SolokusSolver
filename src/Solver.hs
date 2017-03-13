@@ -11,7 +11,7 @@ import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
              , canPutShape, putShape )
 
 solve :: Size -> [Piece] -> [(Color, Pos)] -> [Board]
-solve size pieces startPoss = nub $ foldr f initial startPoss
+solve size pieces startPoss = foldr f initial startPoss
   where f (col, pos) boards = putPermColored col [pos] boards $ coloredPieces col
         initial = [blankBoard size]
         coloredPieces col = [piece | piece <- pieces, pieceColor piece == col]
@@ -22,7 +22,7 @@ putPermColored col poss boards pieces = concatMap (putColored col bss') allOrder
         bss' = zip boards $ repeat poss
 
 putColored :: Color -> [(Board, [Pos])] -> [Piece] -> [Board]
-putColored col bss pieces = map fst $ foldr f bss pieces
+putColored col bss pieces = nub $ map fst $ foldr f bss pieces
   where f piece bss' = [(board, enumerateCorners col board) | board <- nextBoards]
           where nextBoards = putColored1 col bss' piece
 
