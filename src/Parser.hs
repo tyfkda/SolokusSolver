@@ -54,7 +54,7 @@ flipHorz shape = map f shape
 
 -- Move a shape to fit the origin
 normalizeShape :: Shape -> Shape
-normalizeShape shape = map (.-. basePos) shape
+normalizeShape shape = sort $ map (.-. basePos) shape
   where basePos = (minimum $ map fst shape, minimum $ map snd shape)
 
 parseShape :: [String] -> Shape
