@@ -5,12 +5,16 @@ module Types
     , Piece (..)
     , Size
     , Board (..)
+    , (.+.), (.-.)
     , shapeSize
     , pieceColor
     , boardSize, blankBoard, blank, isBlank, isFilled, outOfBoard, getColorAt, canPutShape, putShape
     ) where
 
 type Pos = (Int, Int)  -- row, column
+
+(.+.) (r1, c1) (r2, c2) = (r1 + r2, c1 + c2)
+(.-.) (r1, c1) (r2, c2) = (r1 - r2, c1 - c2)
 
 type Color = Char  -- Piece color
 
@@ -54,21 +58,22 @@ getColorAt :: Pos -> Board -> Color
 getColorAt (r, c) (Board css) = css !! r !! c
 
 canPutShape :: Pos -> Shape -> Color -> Board -> Bool
-canPutShape (r0, c0) shape col board = not $ any invalid shape
-  where invalid (r, c) = outOfBoard pos board ||
+canPutShape basePos shape col board = not $ any invalid shape
+  where invalid offset = outOfBoard pos board ||
                          isFilled pos board ||
                          isShareEdge col pos board
-          where pos = (r0 + r, c0 + c)
+          where pos = basePos .+. offset
 
 isShareEdge :: Color -> Pos -> Board -> Bool
-isShareEdge col (r, c) board = any isShare adjacents
-  where isShare (ar, ac) = not (outOfBoard adj board) && getColorAt adj board == col
-          where adj = (r + ar, c + ac)
+isShareEdge col basePos board = any isShare adjacents
+  where isShare offset = not (outOfBoard adj board) && getColorAt adj board == col
+          where adj = basePos .+. offset
         adjacents = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
 putShape :: Color -> Pos -> Shape -> Board -> Board
-putShape col (sr, sc) shape board = foldr put board shape
-  where put (r, c) (Board colss) = Board $ replace2 colss (sr + r) (sc + c) col
+putShape col basePos shape board = foldr put board shape
+  where put offset (Board colss) = Board $ replace2 colss r c col
+          where (r, c) = basePos .+. offset
 
 replace :: [a] -> Int -> a -> [a]
 replace xs p x = take p xs ++ [x] ++ drop (p + 1) xs

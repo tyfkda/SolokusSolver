@@ -6,6 +6,7 @@ import Data.List (inits, nub, permutations, tails)
 import Data.Maybe (catMaybes)
 
 import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
+             , (.+.), (.-.)
              , boardSize, blankBoard, isBlank, outOfBoard, getColorAt, pieceColor
              , canPutShape, putShape )
 
@@ -30,11 +31,11 @@ putColored1 col bss piece = concatMap (uncurry $ putPoss piece) bss
   where putPoss piece board poss = concatMap (put1PieceAt piece board) poss
 
 put1PieceAt :: Piece -> Board -> Pos -> [Board]
-put1PieceAt (Piece col shapes) board (sr, sc) = oks
+put1PieceAt (Piece col shapes) board basePos = oks
   where oks = catMaybes $ concatMap (\shape -> map (put shape) shape) shapes
-        put shape (r, c) | canPutShape pos shape col board  = Just (putShape col pos shape board)
+        put shape offset | canPutShape pos shape col board  = Just (putShape col pos shape board)
                          | otherwise                        = Nothing
-          where pos = (sr - r, sc - c)
+          where pos = basePos .-. offset
 
 enumerateCorners :: Color -> Board -> [Pos]
 enumerateCorners col board = [pos | pos <- allPoss, isCorner col pos board]
@@ -47,8 +48,8 @@ isCorner col pos board = isBlank pos board &&
   where diagonals = [(-1, -1), (1, -1), (-1, 1), (1, 1)]
 
 isCornerFor :: Color -> Pos -> Pos -> Board -> Bool
-isCornerFor col pos@(r, c) offset@(or, oc) board =
-    not (outOfBoard (r + or, c + oc) board) &&
-    getColorAt (r + or, c + oc) board == col &&
-    getColorAt (r, c + oc) board /= col &&
-    getColorAt (r + or, c) board /= col
+isCornerFor col pos offset@(or, oc) board =
+    not (outOfBoard (pos .+. offset) board) &&
+    getColorAt (pos .+. offset) board == col &&
+    getColorAt (pos .+. (0, oc)) board /= col &&
+    getColorAt (pos .+. (or, 0)) board /= col
