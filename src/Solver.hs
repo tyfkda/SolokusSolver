@@ -1,13 +1,13 @@
 module Solver
     ( solve
-    -- For unit test
     ) where
 
 import Data.List (inits, nub, permutations, tails)
 import Data.Maybe (catMaybes)
 
-import Types (Pos, Color, Shape, Piece (..), Size, Board (..),
-              boardSize, emptyBoard, isEmpty, isFilled, outOfBoard, getColor, pieceColor)
+import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
+             , boardSize, emptyBoard, isEmpty, isFilled, outOfBoard, getColor, pieceColor
+             , canPutShape, putShape )
 
 solve :: Int -> Int ->  [Piece] ->  [(Color, Pos)] -> [Board]
 solve rows cols pieces startPoss = nub $ foldr f initial startPoss
@@ -44,29 +44,3 @@ put1PieceAt (sr, sc) (Piece col shapes) board = oks
   where oks = catMaybes $ concatMap (\shape -> map (put shape) shape) shapes
         put shape (r, c) | canPutShape (sr - r, sc - c) shape col board  = Just (putShape col (sr - r, sc -c) shape board)
                          | otherwise                                     = Nothing
-
-canPutShape :: Pos -> Shape -> Color -> Board -> Bool
-canPutShape (sr, sc) shape col board = not $ any ng shape
-  where ng (r, c) = out || filled || shareEdge
-          where pos = (sr + r, sc + c)
-                out = outOfBoard pos board
-                filled = isFilled board pos
-                shareEdge = any isShare [(-1, 0), (1, 0), (0, -1), (0, 1)]
-                  where isShare (ar, ac) = not (outOfBoard adj board) && getColor adj board == col
-                          where adj = (sr + r + ar, sc + c + ac)
-
-putShape :: Color -> Pos -> Shape -> Board -> Board
-putShape col (sr, sc) shape board = foldr put board shape
-  where put (r, c) (Board colss) = Board $ replace2 colss (sr + r) (sc + c) col
-
-replace :: [a] -> Int -> a -> [a]
-replace xs p x = take p xs ++ [x] ++ drop (p + 1) xs
-
-replace2 :: [[a]] -> Int -> Int -> a -> [[a]]
-replace2 xss row col x = replace xss row newLine
-  where newLine = replace (xss !! row) col x
-
-shapeSize :: Shape -> Size
-shapeSize ls = (maxRow + 1, maxCol + 1)
-  where maxRow = maximum $ map fst ls
-        maxCol = maximum $ map snd ls
