@@ -7,7 +7,7 @@ import Data.Maybe (catMaybes)
 
 import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
              , (.+.), (.-.)
-             , boardSize, blankBoard, isBlank, outOfBoard, getColorAt, pieceColor
+             , boardSize, blankBoard, isBlank, inBoard, getColorAt, pieceColor
              , canPutShape, putShape )
 
 solve :: Int -> Int -> [Piece] -> [(Color, Pos)] -> [Board]
@@ -49,7 +49,7 @@ isCorner col pos board = isBlank pos board &&
 
 isCornerFor :: Color -> Pos -> Pos -> Board -> Bool
 isCornerFor col pos offset@(or, oc) board =
-    not (outOfBoard (pos .+. offset) board) &&
+    inBoard (pos .+. offset) board &&
     getColorAt (pos .+. offset) board == col &&
     getColorAt (pos .+. (0, oc)) board /= col &&
     getColorAt (pos .+. (or, 0)) board /= col

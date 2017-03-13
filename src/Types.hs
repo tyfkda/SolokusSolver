@@ -8,7 +8,7 @@ module Types
     , (.+.), (.-.)
     , shapeSize
     , pieceColor
-    , boardSize, blankBoard, blank, isBlank, isFilled, outOfBoard, getColorAt, canPutShape, putShape
+    , boardSize, blankBoard, blank, isBlank, isFilled, outOfBoard, inBoard, getColorAt, canPutShape, putShape
     ) where
 
 type Pos = (Int, Int)  -- row, column
@@ -18,8 +18,8 @@ type Pos = (Int, Int)  -- row, column
 
 type Size = (Int, Int)  -- row, column
 
-outOfSize :: Pos -> Size -> Bool
-outOfSize (r, c) (rSize, cSize) = r < 0 || c < 0 || r >= rSize || c >= cSize
+inSize :: Pos -> Size -> Bool
+inSize (r, c) (rSize, cSize) = r >= 0 && c >= 0 && r < rSize && c < cSize
 
 type Color = Char  -- Piece color
 
@@ -54,18 +54,21 @@ isBlank loc board = getColorAt loc board == blank
 isFilled :: Pos -> Board -> Bool
 isFilled loc board = not $ isBlank loc board
 
+inBoard :: Pos -> Board -> Bool
+inBoard pos = inSize pos . boardSize
+
 outOfBoard :: Pos -> Board -> Bool
-outOfBoard pos = outOfSize pos . boardSize
+outOfBoard = (not .) . inBoard
 
 getColorAt :: Pos -> Board -> Color
 getColorAt (r, c) (Board css) = css !! r !! c
 
 canPutShape :: Pos -> Shape -> Color -> Board -> Bool
-canPutShape basePos shape col board = fitInBoard && (not $ any invalid shape)
-  where fitInBoard = not $ any (flip outOfBoard board) [basePos,
-                                                        basePos .+. shapeSize shape .-. (1, 1)]
-        invalid offset = isFilled pos board ||
-                         isShareEdge col pos board
+canPutShape basePos shape col board = fitRectInBoard && all canPut shape
+  where fitRectInBoard = all (flip inBoard board) [basePos,
+                                                   basePos .+. shapeSize shape .-. (1, 1)]
+        canPut offset = isBlank pos board &&
+                        not (isShareEdge col pos board)
           where pos = basePos .+. offset
 
 isShareEdge :: Color -> Pos -> Board -> Bool
