@@ -6,43 +6,47 @@ import Parser (parse)
 import Solver (solve)
 import Types (Board (..))
 
-type Color2 = (ColorIntensity, Color)
+type ColorPair = (ColorIntensity, Color)
 
 resetColor :: IO ()
 resetColor = do
-  setSGR[]
+  setSGR []
 
-setColor :: Color2 -> Color2 -> IO ()
+setColor :: ColorPair -> ColorPair -> IO ()
 setColor (fgi, fg) (bgi, bg) = do
   setSGR [SetColor Foreground fgi fg, SetColor Background bgi bg]
 
-colorStr :: Color2 -> Color2 -> String -> IO ()
+colorStr :: ColorPair -> ColorPair -> String -> IO ()
 colorStr fc bc str = do
   setColor fc bc
   putStr str
 
 vividWhite = (Vivid, White)
-dullWhite = (Dull, White)
-dullRed = (Dull, Red)
-dullGreen = (Dull, Green)
-dullYellow = (Dull, Yellow)
-dullBlue = (Dull, Blue)
+vividRed = (Vivid, Red)
+vividGreen = (Vivid, Green)
+vividYellow = (Vivid, Yellow)
+vividBlue = (Vivid, Blue)
 dullBlack = (Dull, Black)
 
-putCell c = do
-  let col = case c of
-              'R'  -> dullRed
-              'G'  -> dullGreen
-              'B'  -> dullBlue
-              'Y'  -> dullYellow
-              _    -> dullBlack
-  colorStr dullWhite col [c]
+chooseColor 'R' = vividRed
+chooseColor 'G' = vividGreen
+chooseColor 'B' = vividBlue
+chooseColor 'Y' = vividYellow
+chooseColor _   = vividWhite
 
 putBoard :: Board -> IO ()
 putBoard (Board css) = do
   resetColor
   putStrLn "--------"
-  mapM_ (\row -> mapM_ putCell row >> putStr "\n") css
+  mapM_ putRow css
+
+  where putRow row = do
+          mapM_ putCell row
+          resetColor
+          putStr "\n"
+
+        putCell c = do
+          colorStr dullBlack (chooseColor c) [c]
 
 main :: IO ()
 main = do
