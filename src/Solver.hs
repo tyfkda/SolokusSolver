@@ -46,11 +46,11 @@ enumerateCorners col board = [pos | pos <- allPoss, isCorner col pos board]
 
 isCorner :: Color -> Pos -> Board -> Bool
 isCorner col pos board = isBlank pos board &&
-                         any (\offset -> isCornerFor col pos offset board) diagonals
+                         any (isCornerFor col pos board) diagonals
   where diagonals = [(-1, -1), (1, -1), (-1, 1), (1, 1)]
 
-isCornerFor :: Color -> Pos -> Pos -> Board -> Bool
-isCornerFor col pos offset@(or, oc) board =
+isCornerFor :: Color -> Pos -> Board -> Pos -> Bool
+isCornerFor col pos board offset@(or, oc) =
     inBoard (pos .+. offset) board &&
     getColorAt (pos .+. offset) board == col &&
     getColorAt (pos .+. (0, oc)) board /= col &&
