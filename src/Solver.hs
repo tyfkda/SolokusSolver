@@ -29,7 +29,7 @@ putColored1 col bss piece = map f $ concatMap (\(board, poss) -> putted board po
         f board = (board, findCorners col board)
 
 findCorners :: Color -> Board -> [Pos]
-findCorners col board@(Board css) = nub $ filter meetCorner allPoss
+findCorners col board@(Board css) = filter meetCorner allPoss
   where allPoss = [(r, c) | r <- [0..boardRows - 1], c <- [0..boardCols - 1]]
         (boardRows, boardCols) = boardSize board
         meetCorner pos@(r, c) = isEmpty board pos && any (meetCornerFor pos) fourCorners
