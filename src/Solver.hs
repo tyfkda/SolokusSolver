@@ -31,11 +31,13 @@ putColored1 col bss piece = concatMap (uncurry $ putPoss piece) bss
   where putPoss piece board poss = concatMap (put1PieceAt piece board) poss
 
 put1PieceAt :: Piece -> Board -> Pos -> [Board]
-put1PieceAt (Piece col shapes) board basePos = oks
-  where oks = catMaybes $ concatMap (\shape -> map (put shape) shape) shapes
-        put shape offset | canPutShape pos shape col board  = Just (putShape col pos shape board)
-                         | otherwise                        = Nothing
-          where pos = basePos .-. offset
+put1PieceAt (Piece col shapes) board basePos = concatMap (putShapeAt col basePos board) shapes
+
+putShapeAt :: Color -> Pos -> Board -> Shape -> [Board]
+putShapeAt col basePos board shape =
+    [putShape col (basePos .-. offset) shape board | offset <- shape,
+                                                     canPut offset]
+  where canPut offset = canPutShape (basePos .-. offset) shape col board
 
 enumerateCorners :: Color -> Board -> [Pos]
 enumerateCorners col board = [pos | pos <- allPoss, isCorner col pos board]
