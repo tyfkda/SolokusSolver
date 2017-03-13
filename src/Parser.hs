@@ -6,7 +6,7 @@ module Parser
     ) where
 
 import Prelude hiding (flip)
-import Data.List (nub)
+import Data.List (nub, sort)
 import Data.Text (split, pack, unpack)
 
 import Types (Pos, Color, Shape, Piece (..), Size, Board (..))
@@ -34,7 +34,7 @@ parsePiece ss = Piece col (expandShape canRotate canFlip shape)
         shape = parseShape ls
 
 expandShape :: Bool -> Bool -> Shape -> [Shape]
-expandShape canRotate canFlip shape = nub flipped
+expandShape canRotate canFlip shape = nub $ map sort flipped
   where rotated
           | canRotate  = take 4 $ iterate rotate90 shape
           | otherwise  = [shape]
