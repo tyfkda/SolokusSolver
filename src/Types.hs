@@ -16,7 +16,7 @@ type Pos = (Int, Int)  -- row, column
 (.+.) (r1, c1) (r2, c2) = (r1 + r2, c1 + c2)
 (.-.) (r1, c1) (r2, c2) = (r1 - r2, c1 - c2)
 
-type Size = (Int, Int)  -- row, column
+type Size = Pos
 
 inSize :: Pos -> Size -> Bool
 inSize (r, c) (rSize, cSize) = r >= 0 && c >= 0 && r < rSize && c < cSize
