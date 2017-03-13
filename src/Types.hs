@@ -36,6 +36,7 @@ shapeSize ls = (maxRow + 1, maxCol + 1)
 data Piece = Piece Color [Shape]  -- Color, Poss of block
   deriving Show
 
+pieceColor :: Piece -> Color
 pieceColor (Piece col _) = col
 
 data Board = Board [[Color]]  -- Size, Start positions for each letters.
