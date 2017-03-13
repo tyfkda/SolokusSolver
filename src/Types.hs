@@ -16,6 +16,11 @@ type Pos = (Int, Int)  -- row, column
 (.+.) (r1, c1) (r2, c2) = (r1 + r2, c1 + c2)
 (.-.) (r1, c1) (r2, c2) = (r1 - r2, c1 - c2)
 
+type Size = (Int, Int)  -- row, column
+
+outOfSize :: Pos -> Size -> Bool
+outOfSize (r, c) (rSize, cSize) = r < 0 || c < 0 || r >= rSize || c >= cSize
+
 type Color = Char  -- Piece color
 
 blank :: Color
@@ -33,7 +38,6 @@ data Piece = Piece Color [Shape]  -- Color, Poss of block
 
 pieceColor (Piece col _) = col
 
-type Size = (Int, Int)  -- row, column
 data Board = Board [[Color]]  -- Size, Start positions for each letters.
   deriving (Eq, Show)
 
@@ -51,8 +55,7 @@ isFilled :: Pos -> Board -> Bool
 isFilled loc board = not $ isBlank loc board
 
 outOfBoard :: Pos -> Board -> Bool
-outOfBoard (r, c) board = r < 0 || c < 0 || r >= boardRow || c >= boardCol
-  where (boardRow, boardCol) = boardSize board
+outOfBoard pos = outOfSize pos . boardSize
 
 getColorAt :: Pos -> Board -> Color
 getColorAt (r, c) (Board css) = css !! r !! c
