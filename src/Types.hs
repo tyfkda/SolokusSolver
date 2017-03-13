@@ -61,9 +61,10 @@ getColorAt :: Pos -> Board -> Color
 getColorAt (r, c) (Board css) = css !! r !! c
 
 canPutShape :: Pos -> Shape -> Color -> Board -> Bool
-canPutShape basePos shape col board = not $ any invalid shape
-  where invalid offset = outOfBoard pos board ||
-                         isFilled pos board ||
+canPutShape basePos shape col board = fitInBoard && (not $ any invalid shape)
+  where fitInBoard = not $ any (flip outOfBoard board) [basePos,
+                                                        basePos .+. shapeSize shape .-. (1, 1)]
+        invalid offset = isFilled pos board ||
                          isShareEdge col pos board
           where pos = basePos .+. offset
 
