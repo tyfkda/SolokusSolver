@@ -13,8 +13,10 @@ $ stack setup
 $ stack build
 ```
 
-### Build
+### Run
 
 ```
-$ stack exec SolokusSolver-exe < [stage_data.txt]
+$ stack exec SolokusSolver-exe < stage_data/novice1/01.txt
 ```
+
+![ss](ss.png)
