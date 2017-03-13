@@ -44,8 +44,8 @@ data Board = Board [[Color]]  -- Size, Start positions for each letters.
 boardSize :: Board -> Size
 boardSize (Board css) = (length css, length $ head css)
 
-blankBoard :: Int -> Int -> Board
-blankBoard rows cols = Board $ replicate rows line
+blankBoard :: Size -> Board
+blankBoard (rows, cols) = Board $ replicate rows line
   where line = replicate cols blank
 
 isBlank :: Pos -> Board -> Bool

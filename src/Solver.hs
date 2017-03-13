@@ -10,10 +10,10 @@ import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
              , boardSize, blankBoard, isBlank, inBoard, getColorAt, pieceColor
              , canPutShape, putShape )
 
-solve :: Int -> Int -> [Piece] -> [(Color, Pos)] -> [Board]
-solve rows cols pieces startPoss = nub $ foldr f initial startPoss
+solve :: Size -> [Piece] -> [(Color, Pos)] -> [Board]
+solve size pieces startPoss = nub $ foldr f initial startPoss
   where f (col, pos) boards = putPermColored col [pos] boards $ coloredPieces col
-        initial = [(blankBoard rows cols)]
+        initial = [blankBoard size]
         coloredPieces col = [piece | piece <- pieces, pieceColor piece == col]
 
 putPermColored :: Color -> [Pos] -> [Board] -> [Piece] -> [Board]

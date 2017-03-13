@@ -11,8 +11,8 @@ import Data.Text (split, pack, unpack)
 
 import Types (Pos, Color, Shape, Piece (..), Size, Board (..))
 
-parse :: String -> (Int, Int, [Piece], [(Color, Pos)])
-parse contents = (rows, cols, pieces, startPoss)
+parse :: String -> (Size, [Piece], [(Color, Pos)])
+parse contents = ((rows, cols), pieces, startPoss)
   where (boardLine : startPossLine : rs) = lines contents
         [rows, cols] = map read $ words boardLine
         startPoss = map parseStartPos $ words startPossLine
