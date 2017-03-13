@@ -8,7 +8,7 @@ module Parser
 import Data.List (nub, sort)
 import Data.Text (split, pack, unpack)
 
-import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
+import Types ( Pos, Color, Shape, Piece (..), Size
              , (.-.)
              )
 
