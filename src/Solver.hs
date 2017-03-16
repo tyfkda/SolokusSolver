@@ -12,22 +12,22 @@ import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
 
 solve :: Size -> [Piece] -> [(Color, Pos)] -> [Board]
 solve size pieces startPoss = foldr f initial startPoss
-  where f (col, pos) boards = putPermColored col pos boards $ coloredPieces col
+  where f (col, pos) boards = putPermColored pos boards $ coloredPieces col
         initial = [blankBoard size]
         coloredPieces col = [piece | piece <- pieces, pieceColor piece == col]
 
-putPermColored :: Color -> Pos -> [Board] -> [Piece] -> [Board]
-putPermColored col pos boards pieces = concatMap (putColored col pos boards) allOrder
+putPermColored :: Pos -> [Board] -> [Piece] -> [Board]
+putPermColored pos boards pieces = concatMap (putColored pos boards) allOrder
   where allOrder = permutations pieces
 
-putColored :: Color -> Pos -> [Board] -> [Piece] -> [Board]
-putColored col pos boards pieces = nub $ map fst $ foldr f initial pieces
+putColored :: Pos -> [Board] -> [Piece] -> [Board]
+putColored pos boards pieces = nub $ map fst $ foldr f initial pieces
   where initial = [(b, [pos]) | b <- boards]
-        f piece bss' = [(board, enumerateCorners col board) | board <- nextBoards]
-          where nextBoards = putColored1 col bss' piece
+        f piece@(Piece col _) bss' = [(board, enumerateCorners col board) | board <- nextBoards]
+          where nextBoards = putColored1 bss' piece
 
-putColored1 :: Color -> [(Board, [Pos])] -> Piece -> [Board]
-putColored1 col bss piece = concatMap (uncurry $ putPoss piece) bss
+putColored1 :: [(Board, [Pos])] -> Piece -> [Board]
+putColored1 bss piece = concatMap (uncurry $ putPoss piece) bss
   where putPoss piece board poss = concatMap (put1PieceAt piece board) poss
 
 put1PieceAt :: Piece -> Board -> Pos -> [Board]
