@@ -12,20 +12,20 @@ import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
 
 solve :: Size -> [Piece] -> [(Color, Pos)] -> [Board]
 solve size pieces startPoss = foldl' f initial startPoss
-  where f boards (col, pos) = concatMap (putColoredPieces (coloredPieces col) [pos]) boards
+  where f boards (col, pos) = nub $ concatMap (g col pos) boards
+        g col pos board = expandRecur putColoredPieces (board, [pos], coloredPieces col)
         initial = [blankBoard size]
         coloredPieces col = [piece | piece <- pieces, pieceColor piece == col]
 
-putColoredPieces :: [Piece] -> [Pos] -> Board -> [Board]
-putColoredPieces [] _ board = [board]
-putColoredPieces _ [] _ = []
-putColoredPieces pieces (pos:poss) board = nub $ concatMap recur (noPut ++ putOnes)
+putColoredPieces :: (Board, [Pos], [Piece]) -> Either [(Board, [Pos], [Piece])] [Board]
+putColoredPieces (board, _, []) = Right [board]
+putColoredPieces (_, [], _) = Right []
+putColoredPieces (board, (pos: poss), pieces) = Left $ noPut ++ putOnes
   where noPut = [(board, poss, pieces)]
-        putOnes = concatMap f rotated
-        f (headPiece@(Piece col _) : leftPiece) = map (\nb -> (nb, enumerateCorners col nb, leftPiece)) nbs
-          where nbs = put1PieceAt headPiece board pos
+        putOnes = concatMap put1 rotated
+        put1 (headPiece@(Piece col _) : leftPiece) =
+            [(board', enumerateCorners col board', leftPiece) | board' <- put1PieceAt headPiece board pos]
         rotated = take (length pieces) $ iterate (\(x:xs) -> xs ++ [x]) pieces
-        recur (board', poss', pieces') = putColoredPieces pieces' poss' board'
 
 put1PieceAt :: Piece -> Board -> Pos -> [Board]
 put1PieceAt (Piece col shapes) board basePos = concatMap (putShapeAt col basePos board) shapes
@@ -52,3 +52,8 @@ isCornerFor col pos board offset@(or, oc) =
     getColorAt (pos .+. offset) board == col &&
     getColorAt (pos .+. (0, oc)) board /= col &&
     getColorAt (pos .+. (or, 0)) board /= col
+
+expandRecur :: Foldable t => (a -> Either (t a) [b]) -> a -> [b]
+expandRecur f = g . f
+  where g (Left as) = concatMap (expandRecur f) as
+        g (Right b) = b
