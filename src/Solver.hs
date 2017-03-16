@@ -2,7 +2,7 @@ module Solver
     ( solve
     ) where
 
-import Data.List (inits, nub, tails)
+import Data.List (foldl', inits, nub, tails)
 import Data.Maybe (catMaybes)
 
 import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
@@ -11,8 +11,8 @@ import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
              , canPutShape, putShape )
 
 solve :: Size -> [Piece] -> [(Color, Pos)] -> [Board]
-solve size pieces startPoss = foldr f initial startPoss
-  where f (col, pos) boards = concatMap (putColoredPieces (coloredPieces col) [pos]) boards
+solve size pieces startPoss = foldl' f initial startPoss
+  where f boards (col, pos) = concatMap (putColoredPieces (coloredPieces col) [pos]) boards
         initial = [blankBoard size]
         coloredPieces col = [piece | piece <- pieces, pieceColor piece == col]
 
