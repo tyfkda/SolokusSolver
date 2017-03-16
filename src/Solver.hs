@@ -22,10 +22,9 @@ putColoredPieces (board, _, []) = Right [board]
 putColoredPieces (_, [], _) = Right []
 putColoredPieces (board, (pos: poss), pieces) = Left $ noPut ++ putOnes
   where noPut = [(board, poss, pieces)]
-        putOnes = concatMap put1 rotated
+        putOnes = concatMap put1 $ rotates pieces
         put1 (headPiece@(Piece col _) : leftPiece) =
             [(board', enumerateCorners col board', leftPiece) | board' <- put1PieceAt headPiece board pos]
-        rotated = take (length pieces) $ iterate (\(x:xs) -> xs ++ [x]) pieces
 
 put1PieceAt :: Piece -> Board -> Pos -> [Board]
 put1PieceAt (Piece col shapes) board basePos = concatMap (putShapeAt col basePos board) shapes
@@ -57,3 +56,6 @@ expandRecur :: Foldable t => (a -> Either (t a) [b]) -> a -> [b]
 expandRecur f = g . f
   where g (Left as) = concatMap (expandRecur f) as
         g (Right b) = b
+
+rotates xs = take (length xs) $ iterate rotate xs
+rotate (x:xs) = xs ++ [x]
