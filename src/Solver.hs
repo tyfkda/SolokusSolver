@@ -2,7 +2,7 @@ module Solver
     ( solve
     ) where
 
-import Data.List (inits, nub, permutations, tails)
+import Data.List (inits, nub, tails)
 import Data.Maybe (catMaybes)
 
 import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
@@ -12,23 +12,20 @@ import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
 
 solve :: Size -> [Piece] -> [(Color, Pos)] -> [Board]
 solve size pieces startPoss = foldr f initial startPoss
-  where f (col, pos) boards = putPermColored pos boards $ coloredPieces col
+  where f (col, pos) boards = concatMap (putColoredPieces (coloredPieces col) [pos]) boards
         initial = [blankBoard size]
         coloredPieces col = [piece | piece <- pieces, pieceColor piece == col]
 
-putPermColored :: Pos -> [Board] -> [Piece] -> [Board]
-putPermColored pos boards pieces = concatMap (putColored pos boards) allOrder
-  where allOrder = permutations pieces
-
-putColored :: Pos -> [Board] -> [Piece] -> [Board]
-putColored pos boards pieces = nub $ map fst $ foldr f initial pieces
-  where initial = [(b, [pos]) | b <- boards]
-        f piece@(Piece col _) bss' = [(board, enumerateCorners col board) | board <- nextBoards]
-          where nextBoards = putColored1 bss' piece
-
-putColored1 :: [(Board, [Pos])] -> Piece -> [Board]
-putColored1 bss piece = concatMap (uncurry $ putPoss piece) bss
-  where putPoss piece board poss = concatMap (put1PieceAt piece board) poss
+putColoredPieces :: [Piece] -> [Pos] -> Board -> [Board]
+putColoredPieces [] _ board = [board]
+putColoredPieces _ [] _ = []
+putColoredPieces pieces (pos:poss) board = nub $ concatMap recur (noPut ++ putOnes)
+  where noPut = [(board, poss, pieces)]
+        putOnes = concatMap f rotated
+        f (headPiece@(Piece col _) : leftPiece) = map (\nb -> (nb, enumerateCorners col nb, leftPiece)) nbs
+          where nbs = put1PieceAt headPiece board pos
+        rotated = take (length pieces) $ iterate (\(x:xs) -> xs ++ [x]) pieces
+        recur (board', poss', pieces') = putColoredPieces pieces' poss' board'
 
 put1PieceAt :: Piece -> Board -> Pos -> [Board]
 put1PieceAt (Piece col shapes) board basePos = concatMap (putShapeAt col basePos board) shapes
