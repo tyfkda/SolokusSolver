@@ -35,8 +35,8 @@ parsePiece ss = Piece col $ expandShape canRotate canFlip shape
         shape = parseShape ls
 
 expandShape :: Bool -> Bool -> Shape -> [Shape]
-expandShape canRotate canFlip shape = nub $ [normalizeShape (f shape) | f <- modifiers]
-  where modifiers = [ff . fr | ff <- flipFuncs, fr <- rotFuncs]
+expandShape canRotate canFlip = nub . map normalizeShape . (modifiers <*>) . pure
+  where modifiers = (.) <$> flipFuncs <*> rotFuncs
         rotFuncs | canRotate  = take 4 $ iterate (rotate90 .) id
                  | otherwise  = [id]
         flipFuncs | canFlip    = [id, flipHorz]
