@@ -53,7 +53,7 @@ flipHorz shape = map f shape
 -- Move a shape to fit the origin
 normalizeShape :: Shape -> Shape
 normalizeShape shape = sort $ map (.-. basePos) shape
-  where basePos = (minimum $ map fst shape, minimum $ map snd shape)
+  where basePos = (minimumOf fst shape, minimumOf snd shape)
 
 parseShape :: [String] -> Shape
 parseShape = map parsePos
@@ -64,3 +64,6 @@ parsePos = (\(r : c : _) -> (read r - 1, read c - 1)) . splitString ','
 
 splitString :: Char -> String -> [String]
 splitString sep str = map unpack $ split (== sep) $ pack str
+
+minimumOf :: (Foldable t, Functor t, Ord b) => (a -> b) -> t a -> b
+minimumOf f = minimum . fmap f
