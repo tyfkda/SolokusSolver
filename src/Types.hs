@@ -11,6 +11,8 @@ module Types
     , boardSize, blankBoard, blank, isBlank, isFilled, outOfBoard, inBoard, getColorAt, canPutShape, putShape
     ) where
 
+import Util (maximumOf, replace2)
+
 type Pos = (Int, Int)  -- row, column
 
 (.+.) (r1, c1) (r2, c2) = (r1 + r2, c1 + c2)
@@ -29,9 +31,7 @@ blank = '.'
 type Shape = [Pos]  -- Poss of block
 
 shapeSize :: Shape -> Size
-shapeSize ls = (maxRow + 1, maxCol + 1)
-  where maxRow = maximum $ map fst ls
-        maxCol = maximum $ map snd ls
+shapeSize size = (maximumOf fst size + 1, maximumOf snd size + 1)
 
 data Piece = Piece Color [Shape]  -- Color, Poss of block
   deriving Show
@@ -82,10 +82,3 @@ putShape :: Color -> Pos -> Shape -> Board -> Board
 putShape col basePos shape board = foldr put board shape
   where put offset (Board colss) = Board $ replace2 colss r c col
           where (r, c) = basePos .+. offset
-
-replace :: [a] -> Int -> a -> [a]
-replace xs p x = take p xs ++ [x] ++ drop (p + 1) xs
-
-replace2 :: [[a]] -> Int -> Int -> a -> [[a]]
-replace2 xss row col x = replace xss row newLine
-  where newLine = replace (xss !! row) col x

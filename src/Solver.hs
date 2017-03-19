@@ -9,6 +9,7 @@ import Types ( Pos, Color, Shape, Piece (..), Size, Board (..)
              , (.+.), (.-.)
              , boardSize, blankBoard, isBlank, inBoard, getColorAt, pieceColor
              , canPutShape, putShape )
+import Util (expandRecur, rotates)
 
 solve :: Size -> [Piece] -> [(Color, Pos)] -> [Board]
 solve size pieces startPoss = foldl' f initial startPoss
@@ -51,11 +52,3 @@ isCornerFor col pos board offset@(or, oc) =
     getColorAt (pos .+. offset) board == col &&
     getColorAt (pos .+. (0, oc)) board /= col &&
     getColorAt (pos .+. (or, 0)) board /= col
-
-expandRecur :: Foldable t => (a -> Either (t a) [b]) -> a -> [b]
-expandRecur f = g . f
-  where g (Left as) = concatMap (expandRecur f) as
-        g (Right b) = b
-
-rotates xs = take (length xs) $ iterate rotate xs
-rotate (x:xs) = xs ++ [x]

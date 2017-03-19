@@ -6,11 +6,11 @@ module Parser
     ) where
 
 import Data.List (nub, sort)
-import Data.Text (split, pack, unpack)
 
 import Types ( Pos, Color, Shape, Piece (..), Size
              , (.-.)
              )
+import Util (minimumOf, splitString)
 
 parse :: String -> (Size, [Piece], [(Color, Pos)])
 parse contents = ((rows, cols), pieces, startPoss)
@@ -61,9 +61,3 @@ parseShape = map parsePos
 -- ex. "1,4" -> (0, 3)
 parsePos :: String -> Pos
 parsePos = (\(r : c : _) -> (read r - 1, read c - 1)) . splitString ','
-
-splitString :: Char -> String -> [String]
-splitString sep str = map unpack $ split (== sep) $ pack str
-
-minimumOf :: (Foldable t, Functor t, Ord b) => (a -> b) -> t a -> b
-minimumOf f = minimum . fmap f
